@@ -6,7 +6,7 @@ import pandas as pd
 # Load the trained model, factorization mappings, and scaler
 model = joblib.load("lightgbm_model.pkl")
 factorized_mappings = joblib.load("factorized_mappings.pkl")
-one_hot_encoder = joblib.load("one_hot_encoder.pkl")
+one_hot_columns = joblib.load("one_hot_columns.pkl")  # Load one-hot columns instead of encoder
 scaler = joblib.load("scaler.pkl")
 
 # Streamlit App UI
@@ -41,7 +41,7 @@ def preprocess_input(category, main_metal, target_gender, main_color, main_gem, 
         "Year": year,
         "Month": month,
     }
-    
+
     # Dynamically create one-hot encoded features
     for gem in ["Main_Gem_" + gem_name for gem_name in ["agate", "amber", "amethyst", "chrysolite", "chrysoprase", "citrine",
                                                        "coral", "corundum_synthetic", "diamond", "emerald", "fianit",
