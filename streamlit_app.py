@@ -32,17 +32,40 @@ def preprocess_input(category, main_metal, target_gender, main_color, main_gem, 
     target_gender_encoded = factorized_mappings["Target_Gender"].index(target_gender) if target_gender in factorized_mappings["Target_Gender"] else -1
     main_color_encoded = factorized_mappings["Main_Color"].index(main_color) if main_color in factorized_mappings["Main_Color"] else -1
 
-    # One-Hot Encode main_gem and brand_id
-    input_df = pd.DataFrame([[main_gem, brand_id]], columns=["Main_Gem", "Brand_ID"])
-    one_hot_encoded = one_hot_encoder.transform(input_df).toarray()
-
-    # Scale numerical features
-    scaled_features = scaler.transform([[year, month]])[0]
-
-    # Combine all features
-    final_features = np.concatenate(([category_encoded, main_metal_encoded, target_gender_encoded, main_color_encoded], one_hot_encoded, scaled_features))
+   # One-Hot Encode main_gem and brand_id (Modified)
+    input_data = {
+        "Category": factorized_mappings["Category"].index(category) if category in factorized_mappings["Category"] else -1,
+        "Main_Metal": factorized_mappings["Main_Metal"].index(main_metal) if main_metal in factorized_mappings["Main_Metal"] else -1,
+        "Target_Gender": factorized_mappings["Target_Gender"].index(target_gender) if target_gender in factorized_mappings["Target_Gender"] else -1,
+        "Main_Color": factorized_mappings["Main_Color"].index(main_color) if main_color in factorized_mappings["Main_Color"] else -1,
+        "Year": year,
+        "Month": month,
+    }
     
-    return final_features.reshape(1, -1)
+    # Dynamically create one-hot encoded features
+    for gem in ["Main_Gem_" + gem_name for gem_name in ["agate", "amber", "amethyst", "chrysolite", "chrysoprase", "citrine",
+                                                       "coral", "corundum_synthetic", "diamond", "emerald", "fianit",
+                                                       "garnet", "iolite", "jade", "lapis_lazuli", "malachite",
+                                                       "moonstone", "onyx", "opal", "pearl", "peridot", "quartz_pink",
+                                                       "quartz_smoky", "ruby", "sapphire", "spinel", "tanzanite",
+                                                       "topaz", "tourmaline", "turquoise", "zircon"]]:
+        input_data[gem] = 1 if gem == "Main_Gem_" + main_gem else 0
+
+    for brand in ["Brand_ID_" + str(i) for i in range(1, 8)]:
+        input_data[brand] = 1 if brand == "Brand_ID_" + str(brand_id) else 0
+
+    # Create DataFrame and ensure all columns from training are present
+    input_df = pd.DataFrame([input_data])
+    for col in one_hot_columns:
+        if col not in input_df.columns:
+            input_df[col] = 0  # Add missing columns with 0
+
+    input_df = input_df[one_hot_columns]  # Reorder columns
+    
+    # Scale numerical features
+    input_df[["Year", "Month"]] = scaler.transform(input_df[["Year", "Month"]])
+    
+    return input_df
 
 # Prediction
 if st.button("Predict Price"):
