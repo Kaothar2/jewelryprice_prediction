@@ -14,10 +14,10 @@ st.title("Jewelry Price Prediction App")
 st.markdown("Enter the jewelry details below to get a price prediction.")
 
 # User Inputs
-category = st.selectbox("Category", factorized_mappings["Category"])
-main_metal = st.selectbox("Main Metal", factorized_mappings["Main_Metal"])
-target_gender = st.selectbox("Target Gender", factorized_mappings["Target_Gender"])
-main_color = st.selectbox("Main Color", factorized_mappings["Main_Color"])
+category = st.selectbox("Category", ["jewelry.earring", "jewelry.pendant", "jewelry.necklace", "jewelry.ring", "jewelry.brooch", "jewelry.bracelet", "jewelry.souvenir", "jewelry.stud"])
+main_metal = st.selectbox("Main Metal", ["gold", "silver", "platinum","diamond"])
+target_gender = st.selectbox("Target Gender", ["f", "m"])
+main_color = st.selectbox("Main Color", ["red", "blue", "green", "black", "white"])
 main_gem = st.selectbox("Main Gem", ["agate", "amber", "amethyst", "chrysolite", "chrysoprase", "citrine",
                                      "coral", "corundum_synthetic"])  # Example list
 brand_id = st.selectbox("Brand ID", range(1, 8))  # Example range
