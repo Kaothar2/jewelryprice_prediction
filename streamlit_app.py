@@ -73,8 +73,18 @@ for col in missing_cols:
 # Reorder columns
 input_data = input_data[one_hot_columns]
 
-# Scale numerical features
-scaled_data = scaler.transform(np.array(input_data).reshape(1, -1))
+# Convert input to NumPy array and check for issues
+input_data = np.array(input_data, dtype=float).reshape(1, -1)
+
+# Ensure input shape matches scaler expectations
+if input_data.shape[1] != scaler.n_features_in_:
+    st.error(f"Expected {scaler.n_features_in_} features, but got {input_data.shape[1]}")
+    st.stop()
+
+# Transform with scaler
+scaled_data = scaler.transform(input_data)
+
+
 
 # Predict price
 if st.button("Predict Price"):
