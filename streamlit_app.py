@@ -76,14 +76,15 @@ input_data = input_data[one_hot_columns]
 # Convert input to NumPy array and check for issues
 input_data = np.array(input_data, dtype=float).reshape(1, -1)
 
-# Ensure input shape matches scaler expectations
-if input_data.shape[1] != scaler.n_features_in_:
-    st.error(f"Expected {scaler.n_features_in_} features, but got {input_data.shape[1]}")
+# Ensure features match before scaling
+st.write(f"Expected Features: {scaler.n_features_in_}, Provided Features: {len(input_data)}")
+
+if len(input_data) != scaler.n_features_in_:
+    st.error(f"Feature mismatch! Expected {scaler.n_features_in_}, but got {len(input_data)}.")
     st.stop()
 
-# Transform with scaler
-scaled_data = scaler.transform(input_data)
-
+# Now apply the scaler safely
+scaled_data = scaler.transform(np.array(input_data).reshape(1, -1))
 
 
 # Predict price
