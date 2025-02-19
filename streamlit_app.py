@@ -12,13 +12,14 @@ def load_file(file_name):
         st.error(f"Error: {file_name} not found!")
         return None
 
-# Load the trained model and preprocessing files
 try:
     model = joblib.load("lightgbm_model.pkl")
     factorized_mappings = joblib.load("factorized_mappings.pkl")
     one_hot_columns = joblib.load("one_hot_columns.pkl")
     scaler = joblib.load("scaler.pkl")
-except FileNotFound
+except FileNotFoundError as e:  # Corrected syntax
+    st.error(f"Missing file: {e}")
+    st.stop()  # Stop execution if files are missing
 
 # Ensure all files are loaded successfully
 if not all([model, factorized_mappings, one_hot_columns, scaler]):
