@@ -19,12 +19,18 @@ st.markdown("Enter the jewelry details below to get a price prediction.")
 # User Inputs
 category = st.selectbox("Category", ["jewelry.earring", "jewelry.pendant", "jewelry.necklace", "jewelry.ring", 
                                      "jewelry.brooch", "jewelry.bracelet", "jewelry.souvenir", "jewelry.stud"])
-main_metal = st.selectbox("Main Metal", ["gold", "silver", "platinum", "diamond"])
-target_gender = st.selectbox("Target Gender", ["f", "m"])
-main_color = st.selectbox("Main Color", ["red", "blue", "green", "black", "white"])
-main_gem = st.selectbox("Main Gem", ["diamond", "emerald", "sapphire", "ruby", "none"])
-brand_id = st.number_input("Brand ID", min_value=1, max_value=1000, step=1)
-year = st.number_input("Year", min_value=1900, max_value=2100, step=1)
+main_metal = st.selectbox("Main Metal", ["gold", "silver", "platinum"])
+target_gender = st.selectbox("Target Gender", ["Unknown", "f", "m"])
+main_color = st.selectbox("Main Color", ["red", "white", "yellow", "Unknown-color"])
+main_gem = st.selectbox("Main Gem", ['diamond', 'sapphire', 'amethyst', 'None', 'fianit', 'pearl',
+       'quartz', 'topaz', 'garnet', 'quartz_smoky', 'ruby', 'agate',
+       'mix', 'citrine', 'emerald', 'amber', 'chrysolite', 'chrysoprase',
+       'nanocrystal', 'turquoise', 'sitall', 'corundum_synthetic',
+       'coral', 'onyx', 'nacre', 'spinel', 'tourmaline',
+       'emerald_geothermal', 'garnet_synthetic', 'rhodolite',
+       'sapphire_geothermal'])
+brand_id = st.number_input("Brand ID", min_value=-1, max_value=5.0, step=1)
+year = st.number_input("Year", min_value=2017, max_value=2030, step=1)
 month = st.number_input("Month", min_value=1, max_value=12, step=1)
 
 # **Preprocessing Function**
