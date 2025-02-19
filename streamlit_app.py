@@ -51,10 +51,8 @@ if st.button("Predict Price"):
     input_data[main_gem] = 1  # Set the selected gem to 1
 
     # Scale numerical features
-       numerical_features = input_data[["Year", "Month"]]
-       scaled_features = scaler.transform(numerical_features)  # Transform numerical features
-       input_data[["Year", "Month"]] = scaled_features  # Update the original DataFrame
-   
+    input_data[["Year", "Month"]] = scaler.transform(input_data[["Year", "Month"]])
+
     # Reorder columns to match training data
     input_data = input_data[one_hot_columns[:-1]]  # Exclude Price_USD
 
