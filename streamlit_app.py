@@ -74,7 +74,7 @@ for col in missing_cols:
 input_data = input_data[one_hot_columns]
 
 # Scale numerical features
-scaled_data = scaler.transform(input_data)
+scaled_data = scaler.transform(np.array(input_data).reshape(1, -1))
 
 # Predict price
 if st.button("Predict Price"):
