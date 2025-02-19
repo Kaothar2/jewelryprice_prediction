@@ -12,11 +12,13 @@ def load_file(file_name):
         st.error(f"Error: {file_name} not found!")
         return None
 
-# Load all necessary files
-model = load_file("lightgbm_model.pkl")
-factorized_mappings = load_file("factorized_mappings.pkl")
-one_hot_columns = load_file("one_hot_columns.pkl")
-scaler = load_file("scaler.pkl")
+# Load the trained model and preprocessing files
+try:
+    model = joblib.load("lightgbm_model.pkl")
+    factorized_mappings = joblib.load("factorized_mappings.pkl")
+    one_hot_columns = joblib.load("one_hot_columns.pkl")
+    scaler = joblib.load("scaler.pkl")
+except FileNotFound
 
 # Ensure all files are loaded successfully
 if not all([model, factorized_mappings, one_hot_columns, scaler]):
