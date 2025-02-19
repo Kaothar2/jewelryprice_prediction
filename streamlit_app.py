@@ -1,93 +1,63 @@
 import streamlit as st
-import joblib
-import numpy as np
 import pandas as pd
-import os
+import numpy as np
+import joblib
 
-# Function to safely load files
-def load_file(file_name):
-    if os.path.exists(file_name):
-        return joblib.load(file_name)
-    else:
-        st.error(f"Error: {file_name} not found!")
-        return None
+# Load the trained model, factorization mappings, scaler, and one-hot columns
+model = joblib.load("lightgbm_model.pkl")
+factorized_mappings = joblib.load("factorized_mappings.pkl")
+scaler = joblib.load("scaler.pkl")
+one_hot_columns = joblib.load("one_hot_columns.pkl")
 
-try:
-    model = joblib.load("lightgbm_model.pkl")
-    factorized_mappings = joblib.load("factorized_mappings.pkl")
-    one_hot_columns = joblib.load("one_hot_columns.pkl")
-    scaler = joblib.load("scaler.pkl")
-except FileNotFoundError as e:  # Corrected syntax
-    st.error(f"Missing file: {e}")
-    st.stop()  # Stop execution if files are missing
-
-# Ensure all files are loaded successfully
-if not all([model, factorized_mappings, one_hot_columns, scaler]):
-    st.stop()
-
-# Streamlit UI
+# Create input widgets for the app
 st.title("Jewelry Price Prediction")
-st.write("Enter the jewelry details to predict the price.")
 
-# User input fields
-year = st.number_input("Year", min_value=2000, max_value=2030, value=2023)
-month = st.selectbox("Month", list(range(1, 13)))
+# Target Gender
+target_gender = st.selectbox("Target Gender", options=factorized_mappings["Target_Gender"])
 
-# Categorical inputs
-main_metal = st.selectbox("Main Metal", factorized_mappings["Main_Metal"])
-target_gender = st.selectbox("Target Gender", factorized_mappings["Target_Gender"])
-category = st.selectbox("Category", factorized_mappings["Category"])
-main_color = st.selectbox("Main Color", factorized_mappings["Main_Color"])
-main_gem = st.text_input("Main Gem", "Diamond")
-brand_id = st.text_input("Brand ID", "BrandX")
+# Main Color
+main_color = st.selectbox("Main Color", options=factorized_mappings["Main_Color"])
 
-# Convert categorical inputs to numerical (factorized encoding)
-def encode_categorical(value, mapping):
-    return mapping.index(value) if value in mapping else -1
+# Main Metal
+main_metal = st.selectbox("Main Metal", options=factorized_mappings["Main_Metal"])
 
-main_metal_encoded = encode_categorical(main_metal, factorized_mappings["Main_Metal"])
-target_gender_encoded = encode_categorical(target_gender, factorized_mappings["Target_Gender"])
-category_encoded = encode_categorical(category, factorized_mappings["Category"])
-main_color_encoded = encode_categorical(main_color, factorized_mappings["Main_Color"])
+# Main Gem
+main_gem = st.selectbox("Main Gem", options=[gem for gem in one_hot_columns if gem.startswith("Main_Gem_")])
 
-# Create input dataframe
-input_data = pd.DataFrame({
-    "Year": [year],
-    "Month": [month],
-    "Main_Metal": [main_metal_encoded],
-    "Target_Gender": [target_gender_encoded],
-    "Category": [category_encoded],
-    "Main_Color": [main_color_encoded],
-    "Main_Gem": [main_gem],
-    "Brand_ID": [brand_id]
-})
+# Category
+category = st.selectbox("Category", options=factorized_mappings["Category"])
 
-# One-hot encode Main_Gem and Brand_ID
-input_data = pd.get_dummies(input_data, columns=["Main_Gem", "Brand_ID"])
+# Year
+year = st.number_input("Year", min_value=2015, max_value=2025, value=2023)
 
-# Ensure columns match the model's expected features
-missing_cols = set(one_hot_columns) - set(input_data.columns)
-for col in missing_cols:
-    input_data[col] = 0  # Add missing columns with zero value
+# Month
+month = st.number_input("Month", min_value=1, max_value=12, value=1)
 
-# Reorder columns
-input_data = input_data[one_hot_columns]
-
-# Convert input to NumPy array and check for issues
-input_data = np.array(input_data, dtype=float).reshape(1, -1)
-
-# Ensure features match before scaling
-st.write(f"Expected Features: {scaler.n_features_in_}, Provided Features: {len(input_data)}")
-
-if len(input_data) != scaler.n_features_in_:
-    st.error(f"Feature mismatch! Expected {scaler.n_features_in_}, but got {len(input_data)}.")
-    st.stop()
-
-# Now apply the scaler safely
-scaled_data = scaler.transform(np.array(input_data).reshape(1, -1))
-
-
-# Predict price
+# Create a button to trigger prediction
 if st.button("Predict Price"):
-    price_prediction = model.predict(scaled_data)[0]
-    st.success(f"Estimated Price: ${price_prediction:.2f}")
+    # Create a DataFrame for the input data
+    input_data = pd.DataFrame({
+        "Target_Gender": [target_gender],
+        "Main_Color": [main_color],
+        "Main_Metal": [main_metal],
+        "Category": [category],
+        "Year": [year],
+        "Month": [month]
+    })
+
+    # Add one-hot encoded columns for Main Gem
+    for gem in [gem for gem in one_hot_columns if gem.startswith("Main_Gem_")]:
+        input_data[gem] = 0  # Initialize to 0
+    input_data[main_gem] = 1  # Set the selected gem to 1
+
+    # Scale numerical features
+    input_data[["Year", "Month"]] = scaler.transform(input_data[["Year", "Month"]])
+
+    # Reorder columns to match training data
+    input_data = input_data[one_hot_columns[:-1]]  # Exclude Price_USD
+
+    # Predict the price
+    predicted_price = model.predict(input_data)[0]
+
+    # Display the prediction
+    st.success(f"Predicted Price (USD): {predicted_price:.2f}")
